@@ -1,0 +1,9 @@
+Changes
+Makefile.PL
+MakeMaker.pm
+MANIFEST
+README
+lib/CPAN/MakeMaker.pod
+lib/CPAN/MakeMaker-Philosophy.pod
+t/TestHelper.pm
+t/basic.t

@@ -1,0 +1,310 @@
+=head1 NAME
+
+CPAN::MakeMaker - A Shiny Replacement for ExtUtils::MakeMaker
+
+=head1 SYNOPSIS
+
+    # Makefile.PL         (Make the Switch!)
+    use CPAN::MakeMaker;
+    WriteMakefile;
+
+=head1 DESCRIPTION
+
+So you want to be a CPAN author? CPAN::MakeMaker can help make it
+easier. This module is a drop-in replacement for ExtUtils::MakeMaker
+(the module used by almost every existing CPAN distribution).
+CPAN::MakeMaker works exactly like its legacy counterpart, but it makes
+a lot of simple things easier, and some harder things possible.
+
+=head1 BUT, BUT!!!
+
+Question:
+
+Isn't there a gigantic chicken and egg problem? 
+
+In order for this to work, CPAN::MakeMaker would need to be on every
+installation of Perl in the world. Since ExtUtils::MakeMaker is already
+out there, aren't we are forced to use it forever?
+
+Answer:
+
+CPAN::MakeMaker gets around this seemingly impossible barrier with a
+simple trick. It writes itself directly into your module's distribution
+directory as C<./CPAN/MakeMaker.pm>. Since C<.> is always in C<@INC>,
+the module is always available.
+
+=head1 FEATURES
+
+If CPAN::MakeMaker didn't have great features, why would you use it?
+
+I<NOTE: Features marked B<XXX> have not yet been implemented, but will
+be soon. In this release, that is almost all of the features. This
+release is intended for proof of concept, and to start discussion.>
+
+=over 4
+
+=item * Does everything ExtUtils::MakeMaker does.
+
+It should. CPAN::MakeMaker is simply a wrapper around
+ExtUtils::MakeMaker. In fact, you should be able to switch any
+existing CPAN distribution to CPAN::MakeMaker simply by changing the
+Makefile.PL line:
+
+   use ExtUtils::MakeMaker;
+
+to:
+
+   use CPAN::MakeMaker;
+
+The C<WriteMakefile> function will pass on keyword/value pair functions
+to C<ExtUtils::MakeMaker::WriteMakefile>. The required parameters
+C<NAME> and C<VERSION> (or C<VERSION_FROM>) aren't necessary if
+CPAN::MakeMaker can find them unambiguously in your code.
+
+CPAN::MakeMaker also adds some Configuration parameters of its own. See
+L<CONFIGURATION OPTIONS> below.
+
+For help on ExtUtils::MakeMaker's options see L<ExtUtils::MakeMaker>, or
+use the command C<make help>.
+
+=item * No user installation.
+
+Just to be clear, only the B<authors> of CPAN modules need to install
+CPAN::MakeMaker. Since it attaches itself to your distribution, your
+users will have it automagically.
+
+This is a huge advantage over replacing Perl's build mechanism with a
+totally new system. No buy-in is needed from any other parties
+besides yourself. As a module author, you are free to use it or
+ignore it. It just works. And it just works with C<every> current
+installation of Perl 5.
+
+I<NOTE: Even though it could be, CPAN::MakeMaker is not B<viral> in
+nature. In other words, it doesn't install itself on the user's machine.
+I can't think of any good reason why it should either. It is only useful
+for it to be installed if you are authoring distributions. And in this
+case, you probably want to install the latest copy, to take advantage of
+new features and bug fixes.>
+
+=item * Always up to date.
+
+You'll never have to worry if the features that are available on B<your>
+version of CPAN::MakeMaker are also available on the B<user's> version.
+That's because, when the user runs C<perl Makefile.PL> she'll be running
+your version of CPAN::MakeMaker, not hers.
+
+This means that new features can constantly be added to CPAN::MakeMaker
+without worrying about everybody having the same version. And I can
+change the interface to an existing feature without worrying about
+backwards compatibility.
+
+=item * Distributing scripts is easy. (XXX - not yet implemented)
+
+CPAN is not just for Perl B<modules>, but it sure seems like it, doesn't
+it? Almost all CPAN distributions contain modules. And almost all of
+these contain documentation. A few of these also contain scripts. But it
+is very rare to see a CPAN distribution that contains just scripts or
+just documentation.
+
+This should not be the case. Some people don't share their Perl code,
+simply because they can't think of a good way to make it into a module.
+CPAN is perfectly capable of installing scripts, but the process of
+setting this up is not well understood by most Perl programmers.
+
+CPAN::MakeMaker makes this a snap. Just put your scripts into a
+subdirectory called C<SCRIPTS>. All the subtle details will be
+handled for you.
+
+=item * Support for Inline::C (XXX - not yet implemented)
+
+ExtUtils::MakeMaker does not have support for Inline::C based
+modules. And even if it were added, it would only help people with
+the very latest version of Perl. This is why the module
+Inline::MakeMaker was invented.
+
+With CPAN::MakeMaker, writing modules that use Inline::C is easy. And
+CPAN::MakeMaker can ensure that the user has the necessary runtime
+components so that they don't need to install the entire Inline
+distribution just to install a module written with Inline.
+
+=item * True bundling. (XXX - not yet implemented)
+
+Some module authors will go to great lengths to avoid using modules that
+have not been in the Perl core distribution since 5.005_03. I am,
+admittedly, one of those authors. That's not to say I won't ever use a
+non-core module, but I'll certainly think twice about it. I feel that it
+raises the barrier of entry to people trying out my modules. 
+
+Sure, there are tools for automatically installing prerequisites, but
+not everybody uses the same tools. I don't ever want a user to not have
+tried my module because it was a pain to install. 
+
+With CPAN::MakeMaker, you can simply create a directory called C<BUNDLE>
+and put any other CPAN tarballs into it. These distributions will be
+installed if the user doesn't already have them. If the user has an
+older version, the distribution will upgrade them. 
+
+CPAN::MakeMaker will prompt the user for these actions.
+
+Of course, some common wisdom should be used with this feature. If you
+bundle big distributions such as C<Tk>, people will probably not try
+your software simply because your distribution is too big!
+
+=item * Support for precompiled binaries. (XXX - not yet implemented)
+
+The art of creating a precompiled binary for Windows seems to be locked
+within the walls of ActiveState. Actually, ActiveState makes all of this
+wonderful technology and its documentation publicly available. But that
+doesn't mean it's easy.
+
+With CPAN::MakeMaker, you can simply type:
+
+    make ppm
+
+If you are on the Windows platform and have the right compiler,
+CPAN::MakeMaker will generate a PPM distribution and stick it in
+your distribution. Now you have a single distribution that also
+works on Windows.
+
+=item * Automatically updates your MANIFEST
+
+As CPAN::MakeMaker generates extra content to put in your distribution,
+it will update your MANIFEST file. When you run C<make dist>, your
+distribution will be properly created.
+
+=item * Self Modifying (XXX - not yet implemented)
+
+As CPAN::MakeMaker grows in functionality, it may become a huge module
+that is undesirable to include in a simple distribution. This is easily
+solved. Since CPAN::MakeMaker knows what options you are using, it can
+simply generate a customized version of itself that uses only the
+features you need.
+
+I<NOTE: CPAN::MakeMaker does not attach its perldoc manpages to your
+distribution. These should only be of interest to authors, not module
+recipients.>
+
+=item * Your wildest dreams. (XXX - not yet implemented)
+
+Now that MakeMaker can be extended, with no limits on software versions,
+the sky's the limit. Please let me know if you have a good idea for
+extending the capabilities of MakeMaker.
+
+=back
+
+=head1 CONFIGURATION OPTIONS
+
+=head2 NAME
+
+The NAME parameter is required by ExtUtils::MakeMaker. If you have a
+single module in your distribution, CPAN::MakeMaker will use the package
+name as the default. If CPAN::MakeMaker can't find a default for NAME it
+will ask you to specify it manually.
+
+=head2 SCRIPTS (XXX - not yet implemented)
+
+If you want to distribute scripts as part of your distribution, put them
+into a directory and use the C<SCRIPTS> keyword to indicate that
+directory. CPAN::MakeMaker will update your MANIFEST automatically.
+
+    WriteMakefile(SCRIPTS => 'script-dir');
+
+=head2 VERSION
+
+ExtUtils::MakeMaker requires either the VERSION or VERSION_FROM
+parameter. If you have a single module in your distribution,
+CPAN::MakeMaker will attempt to parse the VERSION from it. If
+CPAN::MakeMaker can't find a default for VERSION it will ask you to
+specify it manually.
+
+=head1 MAKE TARGETS
+
+ExtUtils::MakeMaker provides you with many useful C<make> targets. A
+C<make> B<target> is the word you specify after C<make>, like C<test>
+for C<make test>. Some of the more useful targets are:
+
+=over 4
+
+=item * all
+
+This is the default target. When you type C<make> it is the same as
+entering C<make all>. This target builds all of your code and stages it
+in the C<blib> directory.
+
+=item * test
+
+Run your distribution's test suite.
+
+=item * install
+
+Copy the contents of the C<blib> directory into the appropriate
+directories in your Perl installation.
+
+=item * dist
+
+Create a distribution tarball, ready for uploading to CPAN or sharing
+with a friend.
+
+=item * clean distclean purge
+
+Remove the files created by C<perl Makefile.PL> and C<make>.
+
+=item * help
+
+Same as typing C<perldoc ExtUtils::MakeMaker>.
+
+=back
+
+CPAN::MakeMaker modifies the behaviour of some of these targets,
+depending on your requirements. For instance, it adds special rules if
+you are building an Inline::C module. CPAN::MakeMaker also adds the
+following targets to your Makefile:
+
+=over 4
+
+=item * cpurge
+
+Just like purge, except that it also deletes the files originally added
+by CPAN::MakeMaker itself.
+
+=item * chelp
+
+Short cut for typing C<perldoc CPAN::MakeMaker>.
+
+=item * ppm (XXX - not yet implemented)
+
+Creates a precompiled binary for the MSWin32 platform.
+
+=back
+
+=head1 STATUS
+
+This is the maiden distribution of CPAN::MakeMaker. I would consider it
+ALPHA status. Since this module simply extends the extremely stable
+ExtUtils::MakeMaker module, it should mature rapidly.
+
+I<NOTE: I have already switched over my Inline and YAML modules, and it
+appears to work flawlessly.>
+
+B<Make the Switch!>
+
+=head1 SEE ALSO
+
+    perldoc CPAN::MakeMaker-Philosophy
+    perldoc ExtUtils::MakeMaker
+    perldoc Module::Build
+
+=head1 AUTHOR
+
+Brian Ingerson <INGY@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2002. Brian Ingerson. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+See http://www.perl.com/perl/misc/Artistic.html
+
+=cut

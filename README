@@ -1,0 +1,70 @@
+CPAN/MakeMaker version 0.10
+===========================
+
+The module ExtUtils::MakeMaker is familiar to everybody. It's on the
+first line of every Makefile.PL of every module distribution on CPAN.
+
+The good thing about ExtUtils::MakeMaker is that it is powerful,
+featureful, flexible, cross-platform and on virtually every installation
+of Perl 5. The bad thing about this legacy workhorse is that the Perl
+community is crippled to significantly improve it. Any features added
+now can only enhance the current release of Perl. Authors would shun new
+features anyway, because their modules could not be used in earlier
+versions of Perl that account for the overwhelming majority of
+installations.
+
+Unfortunately, ExtUtils::MakeMaker is also stuck with a suboptimal
+interface for new Perl authors. Writing a good Makefile.PL requires an
+unnecessary level of expertise. Although anything is possible, some
+seemingly simple tasks (like distributing scripts) involve a lot of
+setup. Complicating the matter is the fact that there is no API for
+accessing many of the powerful internals of ExtUtils::MakeMaker.
+
+CPAN::MakeMaker changes everything.
+
+This module is a drop-in replacement for ExtUtils::MakeMaker.
+CPAN::MakeMaker works exactly like its legacy counterpart, but it makes
+a lot of simple things easier, and some harder things possible.
+
+CPAN::MakeMaker is a self-distributing module. Only the people who want
+to create a Perl module or script distribution need to install it. The
+first time you run your Makefile.PL, CPAN::MakeMaker will attach itself
+to your distribution. The people who end up installing your distribution
+don't even need to have into on their system at all. It just works.
+
+You should be able to switch any of your existing module distributions
+to CPAN::MakeMaker by simply changing the line:
+
+    use ExtUtils::MakeMaker;
+
+to:
+
+    use CPAN::MakeMaker;
+
+And then run the command 'perl Makefile.PL'. Everything should
+just work as before, but now you can take advantage of
+CPAN::MakeMaker's additional features. See the CPAN::MakeMaker
+documentation for more details.
+
+Make the Switch!
+
+NEW FEATURES
+
+    0.10:
+      - Initial Release
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2002 Brian Ingerson
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. 
